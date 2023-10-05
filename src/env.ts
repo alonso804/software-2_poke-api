@@ -7,7 +7,9 @@ dotenv.config();
 
 const envVariablesSchema = z.object({
   PORT: z.string().regex(/^\d+$/).default('3000'),
-  MONGO_URI: z.string().url(),
+  POKE_API_URI: z.string().url(),
+  REDIS_HOST: z.string().default('127.0.0.1'),
+  REDIS_PORT: z.string().regex(/^\d+$/).default('6379'),
 });
 
 const parsedEnvVariables = envVariablesSchema.safeParse(process.env);
