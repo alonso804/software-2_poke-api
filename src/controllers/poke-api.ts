@@ -32,14 +32,14 @@ class PokeApiController {
     const uri = `${process.env.POKE_API_URI}/pokemon/${pokemonName}`;
 
     const {
-      data: { name, abilities },
+      data: { name, abilities, sprites: url },
     } = await axios.get(uri);
 
-    client.set(pokemonName, JSON.stringify({ name, abilities }));
+    client.set(pokemonName, JSON.stringify({ name, abilities, url }));
 
     logger.info({ microservice: 'poke-api', message: 'Read from api' });
 
-    res.status(200).send({ name, abilities });
+    res.status(200).send({ name, abilities, url });
   }
 }
 
