@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import axios from 'axios';
 import type { Request, Response } from 'express';
+import { logger } from 'src/logger';
 import { client } from 'src/redis';
 import { z } from 'zod';
 
@@ -22,6 +23,8 @@ class PokeApiController {
     const redisRes = await client.get(pokemonName);
 
     if (redisRes) {
+      logger.info({ microservice: 'poke-api', message: 'Read from redis' });
+
       res.status(200).send(JSON.parse(redisRes));
       return;
     }
@@ -33,6 +36,8 @@ class PokeApiController {
     } = await axios.get(uri);
 
     client.set(pokemonName, JSON.stringify({ name, abilities }));
+
+    logger.info({ microservice: 'poke-api', message: 'Read from api' });
 
     res.status(200).send({ name, abilities });
   }
