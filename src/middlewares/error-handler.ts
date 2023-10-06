@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import BaseError from 'src/errors/base-error';
+import { logger } from 'src/logger';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const errorHandler = (error: Error, _req: Request, res: Response, _next: NextFunction): void => {
@@ -12,6 +13,8 @@ const errorHandler = (error: Error, _req: Request, res: Response, _next: NextFun
     response.status = error.status;
     response.message = error.message;
   }
+
+  logger.error({ microservice: 'search-api', message: error.message });
 
   res
     .set({

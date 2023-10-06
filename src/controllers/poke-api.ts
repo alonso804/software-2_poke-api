@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import axios from 'axios';
 import type { Request, Response } from 'express';
+import { REDIS_STORE_TIME } from 'src/helpers/constants';
 import { logger } from 'src/logger';
 import { client } from 'src/redis';
 import { z } from 'zod';
@@ -20,7 +21,7 @@ class PokeApiController {
 
     const { name: pokemonName } = data.data;
 
-    const redisRes = await client.get(pokemonName);
+    const redisRes = await client.get(`poke-api:${pokemonName}`);
 
     if (redisRes) {
       logger.info({ microservice: 'poke-api', message: 'Read from redis' });
@@ -35,7 +36,9 @@ class PokeApiController {
       data: { name, abilities, id },
     } = await axios.get(uri);
 
-    client.set(pokemonName, JSON.stringify({ name, abilities, id }));
+    await client.set(`poke-api:${pokemonName}`, JSON.stringify({ name, abilities, id }), {
+      EX: REDIS_STORE_TIME,
+    });
 
     logger.info({ microservice: 'poke-api', message: 'Read from api' });
 
