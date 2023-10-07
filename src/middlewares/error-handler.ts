@@ -14,7 +14,7 @@ const errorHandler = (error: Error, _req: Request, res: Response, _next: NextFun
     response.message = error.message;
   }
 
-  logger.error({ microservice: 'search-api', message: error.message });
+  logger.error({ microservice: 'poke-api', message: error.message, status: response.status });
 
   res
     .set({

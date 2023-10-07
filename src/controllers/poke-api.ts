@@ -14,6 +14,8 @@ class PokeApiController {
   static async get(req: Request, res: Response): Promise<void> {
     const start = performance.now();
 
+    let status = 200;
+
     const data = getSchema.safeParse(req.params);
 
     if (!data.success) {
@@ -27,9 +29,15 @@ class PokeApiController {
 
     if (redisRes) {
       const end = performance.now();
-      logger.info({ microservice: 'poke-api', message: 'Read from redis', time: end - start });
 
-      res.status(200).send(JSON.parse(redisRes));
+      logger.info({
+        microservice: 'poke-api',
+        message: 'Read from redis',
+        time: end - start,
+        status,
+      });
+
+      res.status(status).send(JSON.parse(redisRes));
       return;
     }
 
@@ -52,13 +60,16 @@ class PokeApiController {
         if (error.response?.status === 404) {
           const end = performance.now();
 
+          status = 404;
+
           logger.warn({
             microservice: 'poke-api',
             message: 'Pokemon not found',
             time: end - start,
+            status,
           });
 
-          res.status(404).send({ message: 'Pokemon not found' });
+          res.status(status).send({ message: 'Pokemon not found' });
           return;
         }
       }
@@ -72,7 +83,12 @@ class PokeApiController {
 
     const end = performance.now();
 
-    logger.info({ microservice: 'poke-api', message: 'Read from api', time: end - start });
+    logger.info({
+      microservice: 'poke-api',
+      message: 'Read from api',
+      time: end - start,
+      status,
+    });
 
     res.status(200).send({ name, abilities, id });
   }
