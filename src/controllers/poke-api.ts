@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import type { Request, Response } from 'express';
+import { performance } from 'perf_hooks';
 import { REDIS_STORE_TIME } from 'src/helpers/constants';
 import { logger } from 'src/logger';
 import { client } from 'src/redis';
@@ -12,6 +12,8 @@ const getSchema = z.object({
 
 class PokeApiController {
   static async get(req: Request, res: Response): Promise<void> {
+    const start = performance.now();
+
     const data = getSchema.safeParse(req.params);
 
     if (!data.success) {
@@ -24,7 +26,8 @@ class PokeApiController {
     const redisRes = await client.get(`poke-api:${pokemonName}`);
 
     if (redisRes) {
-      logger.info({ microservice: 'poke-api', message: 'Read from redis' });
+      const end = performance.now();
+      logger.info({ microservice: 'poke-api', message: 'Read from redis', time: end - start });
 
       res.status(200).send(JSON.parse(redisRes));
       return;
@@ -32,15 +35,44 @@ class PokeApiController {
 
     const uri = `${process.env.POKE_API_URI}/pokemon/${pokemonName}`;
 
-    const {
-      data: { name, abilities, id },
-    } = await axios.get(uri);
+    let name: string;
+    let abilities: unknown[];
+    let id: number;
+
+    try {
+      const response = await axios.get(uri);
+
+      const data = response.data as { name: string; abilities: unknown[]; id: number };
+
+      name = data.name;
+      abilities = data.abilities;
+      id = data.id;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 404) {
+          const end = performance.now();
+
+          logger.warn({
+            microservice: 'poke-api',
+            message: 'Pokemon not found',
+            time: end - start,
+          });
+
+          res.status(404).send({ message: 'Pokemon not found' });
+          return;
+        }
+      }
+
+      throw error;
+    }
 
     await client.set(`poke-api:${pokemonName}`, JSON.stringify({ name, abilities, id }), {
       EX: REDIS_STORE_TIME,
     });
 
-    logger.info({ microservice: 'poke-api', message: 'Read from api' });
+    const end = performance.now();
+
+    logger.info({ microservice: 'poke-api', message: 'Read from api', time: end - start });
 
     res.status(200).send({ name, abilities, id });
   }
