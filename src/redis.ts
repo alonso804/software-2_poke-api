@@ -12,7 +12,7 @@ async function initRedis(): Promise<void> {
   while (!success) {
     try {
       await client.connect();
-      logger.info('Connected to redis');
+      logger.debug('Connected to redis');
       success = true;
     } catch (error) {
       logger.error(`Error connecting to redis: ${error}`);

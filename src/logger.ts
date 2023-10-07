@@ -1,7 +1,7 @@
 import winston from 'winston';
 
 export const logger = winston.createLogger({
-  level: 'info',
+  level: 'debug',
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.json(),
@@ -14,6 +14,6 @@ export const logger = winston.createLogger({
       ),
     }),
     new winston.transports.File({ filename: 'logs/error.log', level: 'warn' }),
-    new winston.transports.File({ filename: 'logs/app.log' }),
+    new winston.transports.File({ filename: 'logs/app.log', level: 'info' }),
   ],
 });

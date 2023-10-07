@@ -14,6 +14,6 @@ const routes: { path: string; router: Router }[] = routeFiles.map((routeFile) =>
   };
 });
 
-logger.info({ paths: routes.map((route) => route.path) });
+logger.debug({ paths: routes.map((route) => route.path) });
 
 export default routes;

@@ -25,5 +25,5 @@ app.use(pathNotFound);
 app.use(errorHandler);
 
 app.listen(port, () => {
-  logger.info(`Server started at http://localhost:${port}`);
+  logger.debug(`Server started at http://localhost:${port}`);
 });
