@@ -8,7 +8,10 @@ export const logger = winston.createLogger({
   ),
   transports: [
     new winston.transports.Console({
-      format: winston.format.colorize({ all: true }),
+      format: winston.format.combine(
+        winston.format.prettyPrint(),
+        winston.format.colorize({ all: true }),
+      ),
     }),
     new winston.transports.File({ filename: 'logs/error.log', level: 'warn' }),
     new winston.transports.File({ filename: 'logs/app.log' }),
